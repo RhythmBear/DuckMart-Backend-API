@@ -29,8 +29,8 @@ class User(db):
             'device_type': self.device_type
         }
 
-    # def __repr__(self):
-    #     return f"User {self.first_name} {self.last_name})"
+    def __repr__(self):
+        return f"<User {self.first_name} {self.last_name}>"
 
 
 class UserEvents(db):
@@ -41,6 +41,7 @@ class UserEvents(db):
     event_name = Column(String, nullable=False)
     timestamp = Column(DateTime)
 
+    @property
     def serialize(self):
         """ Returns data in a json format"""
         return {
@@ -51,4 +52,4 @@ class UserEvents(db):
         }
 
     def __repr__(self):
-        return f"< UserEvent {self.user_id} event_name {self.event_name} >"
+        return f"<UserEvent {self.user_id} event_name {self.event_name}>"
