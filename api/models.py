@@ -1,5 +1,7 @@
-from api import db
 from sqlalchemy import Column, Integer, Sequence, String, create_engine, DateTime
+from sqlalchemy.ext.declarative import declarative_base
+
+db = declarative_base()
 
 
 class User(db):
