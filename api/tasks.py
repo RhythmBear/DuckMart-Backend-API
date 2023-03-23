@@ -1,6 +1,16 @@
 import duckdb
+from datetime import datetime
 
 con = duckdb.connect(database=':memory:', read_only=False)
+
+
+def validate_date(raw_date):
+    try:
+        start_date_obj = datetime.strptime(raw_date, '%Y-%m-%d')
+    except ValueError:
+        raise ValueError("Incorrect date format, should be YYYY-MM-DD")
+
+    return start_date_obj
 
 
 def load_data_from_db():
@@ -22,7 +32,6 @@ def load_data_from_db():
 
     """)
 
-
     # Create UserEvents Table
     con.execute(
         """
@@ -43,7 +52,10 @@ def segment_user(json_segment: dict):
         "age": 'all',
         "gender": 'all',
         "location": 'all',
-        "sign_up_date": 'all',
+        "sign_up_date": {
+            "start_date": "",
+            "end_date": ""
+        },
         "subscription_plan": 'all',
         "device_type": 'all',
         "events": 'all'
@@ -75,11 +87,31 @@ def segment_user(json_segment: dict):
                         "valid_values": valid_values}
 
         elif key == "sign_up_date":
-            pass
+            # Check to make sure that a dictionary is provided
+            if type(value) is dict:
 
-        elif key == "events":
+                try:
+                    start_date = validate_date(value["start_date"])
+
+                except KeyError:
+                    start_date = validate_date('1753-1-1')
+
+                try:
+                    end_date = validate_date(value["end_date"])
+
+                except KeyError:
+                    end_date = datetime.now().date()
+
+                # if Both start and end dates are provided:
+                if start_date is not None and end_date is not None:
+                    user_query = con.execute(f"""SELECT * 
+                                             FROM previous_query 
+                                             WHERE sign_up_date BETWEEN '{start_date}' AND '{end_date}'""").df()
+
+        elif key == "age":
             pass
 
     return user_query
+
 
 con = load_data_from_db()
